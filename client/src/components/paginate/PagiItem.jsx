@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 
 const PagiItem = ({children, onClick, currentPage})=>{
     return (
-        <button className={clsx("p-2  w-10 h-10 justify-center flex ",
+        <button className={clsx("p-3  w-10 h-10 justify-center flex ",
             !Number(children) && "items-end font-semibold text-xl mt-1", 
             Number(children) && "items-center hover:rounded-full hover:bg-gray-400",
             Number(children) == currentPage && "rounded-full bg-gray-300")} 
