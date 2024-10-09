@@ -53,6 +53,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth.requestMatchers(whiteList).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v2/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v2/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "api/v2/product/ratings/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(customAuthenticationEntryPoint))

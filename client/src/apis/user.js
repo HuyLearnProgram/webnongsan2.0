@@ -55,3 +55,19 @@ export const apiLogout = async () =>
         method: 'post',
         withCredentials: true,
     });
+export const apiUpdateCurrentUser = async (formData) =>
+    axiosInstance({
+        url: "/auth/account",
+        method: 'put',
+        data: formData,
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+
+export const fetchAvatarBase64 = async (folder, fileName) => {
+    return axiosInstance({
+        url: `/file/${folder}/${fileName}`,
+        method: 'get',
+    });
+};

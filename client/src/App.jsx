@@ -2,6 +2,7 @@ import React, {useEffect} from 'react'
 import path from './utils/path'
 import { Route, Routes, useLocation} from "react-router-dom";
 import { Login, Home, Public, ProductDetail, ForYou, Product, ResetPassword} from "./pages/guest";
+import { MemberLayout, MyCart, Personal, Wishlist, History } from './pages/member';
 import { useDispatch, useSelector } from "react-redux";
 import { getCategories } from "./store/app/asyncActions";
 import { Bounce, ToastContainer } from "react-toastify";
@@ -30,6 +31,12 @@ const App = () => {
           <Route path={path.FOR_YOU} element={<ForYou/>}></Route>
           <Route path={path.PRODUCT_DETAIL} element={<ProductDetail />}></Route>
           <Route path={path.RESET_PASSWORD} element={<ResetPassword />}></Route>
+        </Route>
+        <Route path={path.MEMBER} element={<MemberLayout />}>
+          <Route path={path.PERSONAL} element={<Personal/>}></Route>
+          <Route path={path.MY_CART} element={<MyCart/>}></Route>
+          <Route path={path.HISTORY} element={<History/>}></Route>
+          <Route path={path.WISHLIST} element={<Wishlist/>}></Route>
         </Route>
         <Route path={path.LOGIN} element={<Login />}></Route>
       </Routes>

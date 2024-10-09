@@ -2,6 +2,8 @@ package com.app.webnongsan.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -69,4 +71,5 @@ public class FileService {
         File file = new File(path.toString());
         return new InputStreamResource(new FileInputStream(file));
     }
+
 }

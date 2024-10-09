@@ -8,11 +8,13 @@ import com.app.webnongsan.domain.response.user.UserDTO;
 import com.app.webnongsan.repository.UserRepository;
 import com.app.webnongsan.util.exception.ResourceInvalidException;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -143,6 +145,5 @@ public class UserService {
 
         this.userRepository.save(user);
     }
-
 }
 

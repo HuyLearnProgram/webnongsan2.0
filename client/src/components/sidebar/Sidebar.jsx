@@ -1,8 +1,8 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import { createSlug } from '../utils/helper';
-import category_default from "../assets/category_default.png";
+import { createSlug } from '../../utils/helper';
+import category_default from "../../assets/category_default.png";
 const Sidebar = () => {
     const { categories } = useSelector((state) => {
         //console.log(state)

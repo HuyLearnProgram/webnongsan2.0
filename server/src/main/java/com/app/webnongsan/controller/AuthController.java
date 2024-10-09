@@ -8,6 +8,7 @@ import com.app.webnongsan.domain.response.user.CreateUserDTO;
 import com.app.webnongsan.domain.response.user.ResLoginDTO;
 import com.app.webnongsan.service.AuthService;
 import com.app.webnongsan.service.EmailService;
+import com.app.webnongsan.service.FileService;
 import com.app.webnongsan.service.UserService;
 import com.app.webnongsan.util.SecurityUtil;
 import com.app.webnongsan.util.annotation.ApiMessage;
@@ -24,7 +25,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,16 +38,18 @@ public class AuthController {
     private final SecurityUtil securityUtil;
     private final UserService userService;
     private final EmailService emailService;
+    private final FileService fileService;
     private final AuthService authService;
     @Value("${jwt.refreshtoken-validity-in-seconds}")
     private long refreshTokenExpiration;
 
-    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, UserService userService, EmailService emailService, AuthService authService) {
+    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, UserService userService, EmailService emailService, AuthService authService, FileService fileService) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
         this.userService = userService;
         this.emailService = emailService;
         this.authService = authService;
+        this.fileService = fileService;
     }
 
     @PostMapping("auth/login")
@@ -57,7 +62,11 @@ public class AuthController {
 
         User currentUserDB = this.userService.getUserByUsername(loginDTO.getEmail());
         if (currentUserDB != null) {
-            ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(currentUserDB.getId(), currentUserDB.getEmail(), currentUserDB.getName(), currentUserDB.getRole());
+            ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
+                    currentUserDB.getId(), currentUserDB.getEmail(),
+                    currentUserDB.getName(), currentUserDB.getRole(),
+                    currentUserDB.getAvatarUrl(),currentUserDB.getAddress(),
+                    currentUserDB.getPhone(),currentUserDB.getStatus());
             res.setUser(userLogin);
         }
 
@@ -91,8 +100,53 @@ public class AuthController {
             userLogin.setEmail(currentUserDB.getEmail());
             userLogin.setName(currentUserDB.getName());
             userLogin.setRole(currentUserDB.getRole());
+            userLogin.setAddress(currentUserDB.getAddress());
+            userLogin.setStatus(currentUserDB.getStatus());
+            userLogin.setPhone(currentUserDB.getPhone());
+            userLogin.setAvatarUrl(currentUserDB.getAvatarUrl());
             userGetAccount.setUser(userLogin);
         }
+        return ResponseEntity.ok(userGetAccount);
+    }
+
+    @PutMapping("auth/account")
+    @ApiMessage("Update User Information")
+    public ResponseEntity<ResLoginDTO.UserGetAccount> udateUser(
+            @RequestParam("name") String name,
+            @RequestParam("email") String email,
+            @RequestParam("phone") String phone,
+            @RequestParam("address") String address,
+            @RequestParam(value = "avatarUrl", required = false)MultipartFile avatar) throws IOException {
+        String emailLoggedIn = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+        // Lấy thông tin người dùng trong db
+        User currentUserDB = userService.getUserByUsername(emailLoggedIn);
+        ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin();
+        ResLoginDTO.UserGetAccount userGetAccount = new ResLoginDTO.UserGetAccount();
+
+        // Cập nhật thông tin người dùng
+        currentUserDB.setName(name);
+        currentUserDB.setEmail(email);
+        currentUserDB.setPhone(phone);
+        currentUserDB.setAddress(address);
+        // Kiểm tra nếu có avatar mới được upload
+        if (avatar != null && !avatar.isEmpty()) {
+            // Lưu file ảnh vào server hoặc storage và cập nhật URL
+            String avatarUrl = fileService.store(avatar,"avatar");
+            currentUserDB.setAvatarUrl(avatarUrl);
+        }
+        userService.update(currentUserDB);
+        // Lấy thông tin người dùng sau khi cập nhật
+
+        userLogin.setId(currentUserDB.getId());
+        userLogin.setEmail(currentUserDB.getEmail());
+        userLogin.setName(currentUserDB.getName());
+        userLogin.setRole(currentUserDB.getRole());
+        userLogin.setAddress(currentUserDB.getAddress());
+        userLogin.setStatus(currentUserDB.getStatus());
+        userLogin.setPhone(currentUserDB.getPhone());
+        userLogin.setAvatarUrl(currentUserDB.getAvatarUrl());
+        userGetAccount.setUser(userLogin);
+
         return ResponseEntity.ok(userGetAccount);
     }
 
@@ -119,7 +173,11 @@ public class AuthController {
                     currentUserDB.getId(),
                     currentUserDB.getEmail(),
                     currentUserDB.getName(),
-                    currentUserDB.getRole());
+                    currentUserDB.getRole(),
+                    currentUserDB.getAvatarUrl(),
+                    currentUserDB.getAddress(),
+                    currentUserDB.getPhone(),
+                    currentUserDB.getStatus());
             res.setUser(userLogin);
         }
 
