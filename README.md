@@ -6,7 +6,7 @@
 ## Công nghệ sử dụng
 - **Frontend**: React, Redux, Tailwind CSS
 - **Backend**: Spring Boot, MySQL
-- **Authentication**: JWT
+- **Authentication**: JWT, Google Oauth
 - **Intelligent System**: Python x Sentence-BERT, KNN, Cosine similarity
 
 ## Cài đặt và chạy dự án
