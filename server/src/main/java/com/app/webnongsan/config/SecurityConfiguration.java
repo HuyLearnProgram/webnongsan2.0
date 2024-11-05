@@ -16,6 +16,10 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -26,6 +30,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.util.Map;
 
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
@@ -39,7 +44,8 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         String[] whiteList = {
                 "/", "/api/v2/auth/login",
                 "/api/v2/auth/refresh",
@@ -47,11 +53,16 @@ public class SecurityConfiguration {
                 "/api/v2/auth/forgot",
                 "/api/v2/auth/reset-password",
                 "/api/v2/auth/validate-token",
+                "/api/v2/auth/signin/google",
                 "/storage/**",
+                "/api/v2/similar/**",
+                "/oauth2/**"
         };
+
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(auth -> auth.requestMatchers(whiteList).permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(whiteList).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v2/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v2/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v2/product/ratings/**").permitAll()
@@ -59,11 +70,19 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET,"/api/v2/payment/vn-pay/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/v2/payment/vn-pay-callback").permitAll()
                         .requestMatchers("/favicon.ico").permitAll()
-                        .anyRequest().authenticated())
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
+                        // filter role with spring security
+                        .requestMatchers(HttpMethod.POST, "/api/v2/products").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v2/products").hasRole("ADMIN")
+                        .anyRequest().authenticated()
+                )
+
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(customAuthenticationEntryPoint))
                 .formLogin(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         return http.build();
     }
 
@@ -96,7 +115,7 @@ public class SecurityConfiguration {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         grantedAuthoritiesConverter.setAuthorityPrefix("");
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("test");
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
         return jwtAuthenticationConverter;

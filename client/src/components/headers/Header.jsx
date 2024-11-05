@@ -5,7 +5,7 @@ import icons from "@/utils/icons";
 import { Link} from "react-router-dom";
 import path from "@/utils/path";
 import { useSelector } from "react-redux";
-import { Logout, SearchBar } from "@/components";
+import { SearchBar } from "@/components";
 import withBaseComponent from "@/hocs/withBaseComponent";
 
 const { FaUserCircle, FaCartShopping } = icons;
@@ -45,10 +45,9 @@ const Header = ({ navigate}) => {
           <FaUserCircle color="#10B981" size={25} />
           <span>Tài khoản</span>
           {isShowOption && current && <div onClick={e => e.stopPropagation()} className="z-10 absolute mt-4 flex flex-col top-full left-0 bg-gray-100 border min-w-[150px] py-2">
-            <Link className="p-2 w-full hover:bg-sky-100" to={`/${path.MEMBER}/${path.PERSONAL}`} >Personal</Link>
+            <Link className="p-2 w-full hover:bg-sky-100" to={`/${path.MEMBER}/${path.PERSONAL}`} >Trang cá nhân</Link>
             {current?.role.roleName === "ADMIN" && <Link
-              className="p-2 w-full hover:bg-sky-100" to={`/${path.ADMIN}/${path.ADMIN_OVERVIEW}`} >Admin Workplace</Link>}
-            <Logout text="Logout" />
+              className="p-2 w-full hover:bg-sky-100" to={`/${path.ADMIN}/${path.ADMIN_OVERVIEW}`} >Trang quản trị</Link>}
           </div>}
         </div>
       </div>

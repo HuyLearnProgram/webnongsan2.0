@@ -3,7 +3,7 @@ export const apiGetAllOrders = async (params) =>
     axiosInstance({
         url: "/allOrders",
         method: "get",
-        params:params,
+        params: params,
         paramsSerializer: {
             encode: (value) => value,
             serialize: (params) => {
@@ -19,20 +19,29 @@ export const apiGetOrderDetail = async (oid) =>
         url: `/OrderDetails/${oid}`,
         method: "get",
     })
-export const apiGetOrderInfor = async (oid)=>
+export const apiGetOrderInfor = async (oid) =>
     axiosInstance({
         url: `/orderInfo/${oid}`,
-        method:"get",
-    })
-    
-export const apiGetOverviewOrder = async()=>
-    axiosInstance({
-        url:`overviewOrder`,
-        method:`get`,
+        method: "get",
     })
 
-export const apiUpdateOrderStatus = async(orderId,status)=>
+export const apiGetMonthlyRevenue = async (month, year) =>
     axiosInstance({
-        url:`updateOrderStatus/${orderId}`,
-        params:{status:status},
+        url: `monthly-orders-revenue`,
+        method: `get`,
+        params: {
+            month: month,
+            year: year
+        }
+    })
+
+export const apiUpdateOrderStatus = async (orderId, status) =>
+    axiosInstance({
+        url: `updateOrderStatus/${orderId}`,
+        params: { status: status },
+    })
+
+export const apiGetSummary = async () =>
+    axiosInstance({
+        url: `admin/summary`,
     })

@@ -14,7 +14,6 @@ public class PermissionInterceptorConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-
         registry.addInterceptor(getPermissionInterceptor())
                 .addPathPatterns("/**");
     }

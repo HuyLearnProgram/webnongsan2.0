@@ -27,7 +27,7 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    @NotBlank(message = "Không được để trống password")
+//    @NotBlank(message = "Không được để trống password")
     private String password;
 
     private int status;
@@ -35,7 +35,8 @@ public class User {
     private String phone;
 
     private String address;
-
+    private String provider;
+    private String providerId;
     private String avatarUrl;
 
     @Column(columnDefinition = "MEDIUMTEXT")

@@ -35,7 +35,6 @@ public class PermissionInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // Kiểm tra role ADMIN
         String role = SecurityUtil.getUserRole();
         if ("ADMIN".equals(role)) {
             return true;

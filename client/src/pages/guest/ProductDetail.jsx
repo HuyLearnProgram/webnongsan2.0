@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { apiGetProduct, apiGetRatingsPage, apiRatings, apiGetRecommendedProducts, apiAddOrUpdateCart, apiAddWishList } from '@/apis';
+import { apiGetProduct, apiGetRatingsPage, apiRatings, apiFetchRecommendProductById, apiAddOrUpdateCart, apiAddWishList } from '@/apis';
 import { Breadcrumb, Button, QuantitySelector, ProductExtraInfoItem, ProductInfomation, VoteOption, Comment, ProductCard } from '@/components';
 import { formatMoney, renderStarFromNumber } from '@/utils/helper'
 import product_default from '@/assets/product_default.png'
@@ -37,77 +37,66 @@ const ProductDetail = ({ isQuickView, data }) => {
 
   useEffect(() => {
     if (data) {
-      setPid(data.pid)
+      setPid(data.pid);
+    } else if (params) {
+      setPid(params.pid);
     }
-    else if (params) {
-      setPid(params.pid)
-    }
-  }, [params, data])
-  const fetchProductData = async () => {
-    const response = await apiGetProduct(pid)
-    if (response.statusCode === 200)
-      setProduct(response.data)
-  }
+  }, [params, data]);
 
-  // const fetchRecommended = async () => {
-  //   const res = await apiGetRecommendedProducts(pid);
-  //   if (res.status_code === 200) {
-  //     setRecommendedProducts(res.data)
-  //   }
-  // }
-  const fetchFeedbacksPageData = async (page = 1) => {
-    const response = await apiGetRatingsPage(pid, { page, size: 5 })
+  const fetchProductData = async () => {
+    const response = await apiGetProduct(pid);
     if (response.statusCode === 200) {
-      setFeedbacksPage(response.data?.result)
-      setPaginate(response.data?.meta)
-      setCurrentPage(page)
+      setProduct(response.data);
     }
-  }
-  const fetchFeedbacksData = async () => {
-    const response = await apiGetRatingsPage(pid, { page: 1 })
-    if (response.statusCode === 200)
-      setFeedbacks(response.data?.result)
-  }
+  };
+
+  const fetchRecommended = async () => {
+    const res = await apiFetchRecommendProductById(pid);
+    if (res.statusCode === 200) {
+      setRecommendedProducts(res.data);
+    }
+  };
+
+  const fetchFeedbacksData = async (page = 1) => {
+    const response = await apiGetRatingsPage(pid, { page, size: 5 });
+    if (response.statusCode === 200) {
+      setFeedbacks(response.data?.result);
+      setFeedbacksPage(response.data?.result); // Có thể bỏ qua nếu không cần
+      setCurrentPage(page);
+    }
+  };
 
   const fetchUserData = async () => {
-    if (current)
-      setUid(current.id)
-  }
-
+    if (current) {
+      setUid(current.id);
+    }
+  };
 
   useEffect(() => {
-    if (pid) {
-      fetchProductData();
-      if (!isQuickView) {
-        fetchFeedbacksPageData(currentPage);
-        fetchFeedbacksData();
-        // fetchRecommended();
+    const fetchData = async () => {
+      if (pid) {
+        await fetchProductData();
+        await fetchRecommended();
+        
+        // Chỉ gọi fetchFeedbacksData nếu không ở chế độ Quick View
+        if (!isQuickView) {
+          await fetchFeedbacksData(currentPage);
+        }
       }
-    }
-  }, [pid]);
-
-  useEffect(() => {
-    if (!isQuickView && pid) {
-      fetchFeedbacksPageData(currentPage);
-    }
-  }, [pid, currentPage]);
-
-  useEffect(() => {
-    if (!isQuickView && pid) {
-      fetchFeedbacksData();
-      fetchFeedbacksPageData(currentPage);
-    }
-  }, [pid, update]);
+    };
+  
+    fetchData();
+  }, [pid, currentPage, update, isQuickView])
 
   useEffect(() => {
     if (!isQuickView) {
       fetchUserData();
     }
-  }, []);
+  }, [isQuickView]);
 
   const rerender = useCallback(() => {
-    setUpdate(!update)
-  }, [update])
+    setUpdate(prev => !prev);
+  }, []);
 
   const handleQuantityChange = (newQuantity) => {
     if (newQuantity > product?.quantity) {
@@ -118,16 +107,16 @@ const ProductDetail = ({ isQuickView, data }) => {
     }
   };
 
-
   const handleSubmitVoteOption = async ({ comment, score }) => {
     if (!comment || !score || !pid) {
-      alert("Vui lòng nhập đầy đủ thông tin")
-      return
+      alert("Vui lòng nhập đầy đủ thông tin");
+      return;
     }
-    await apiRatings({ description: comment, ratingStar: score, productId: pid, userId: uid })
-    dispatch(showModal({ isShowModal: false, modalChildren: null }))
-    rerender()
-  }
+    await apiRatings({ description: comment, ratingStar: score, productId: pid, userId: uid });
+    dispatch(showModal({ isShowModal: false, modalChildren: null }));
+    rerender();
+  };
+
   const checkLoginAndExecute = async (callback) => {
     if (!isLoggedIn) {
       const result = await Swal.fire({

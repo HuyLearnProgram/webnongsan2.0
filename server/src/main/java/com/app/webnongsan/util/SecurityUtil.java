@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
@@ -74,13 +75,15 @@ public class SecurityUtil {
         userLogin.setId(resLoginDTO.getUser().getId());
         userLogin.setEmail(resLoginDTO.getUser().getEmail());
         userLogin.setName(resLoginDTO.getUser().getName());
-        if (resLoginDTO.getUser().getRole()!=null){
+        if (resLoginDTO.getUser().getRole() != null) {
             userLogin.setRole(resLoginDTO.getUser().getRole());
         }
 
-        // Tạo claims bổ sung cho access token
+        assert resLoginDTO.getUser().getRole() != null;
+        List<String> authorities = List.of("ROLE_" + resLoginDTO.getUser().getRole().getRoleName());
         Map<String, Object> additionalClaims = new HashMap<>();
         additionalClaims.put("user", userLogin);
+        additionalClaims.put("authorities", authorities);
 
         return createToken(email, now, validity, additionalClaims);
     }
@@ -94,12 +97,16 @@ public class SecurityUtil {
         userToken.setEmail(res.getUser().getEmail());
         userToken.setName(res.getUser().getName());
 
+        List<String> authorities = List.of("ROLE_" + res.getUser().getRole().getRoleName());
+
         // Tạo claims bổ sung cho refresh token
         Map<String, Object> additionalClaims = new HashMap<>();
         additionalClaims.put("user", userToken);
+        additionalClaims.put("authorities", authorities);
 
         return createToken(email, now, validity, additionalClaims);
     }
+
 
     public String createResetPasswordToken(String email, String uuid) {
         Instant now = Instant.now();
@@ -152,6 +159,7 @@ public class SecurityUtil {
         throw new IllegalArgumentException("User ID not found or invalid token");
     }
 
+    // không sử dụng nếu sử dụng spring security
     public static String getUserRole() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

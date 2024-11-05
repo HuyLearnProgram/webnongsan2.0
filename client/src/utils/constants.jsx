@@ -15,11 +15,6 @@ export const navigation = [
     value: "Sản phẩm",
     path: `/${path.PRODUCTS_BASE}`,
   },
-  {
-    id: 3,
-    value: "Dành cho bạn",
-    path: `/${path.FOR_YOU}`,
-  }
 ];
 const { FaTruck, GiReturnArrow, SiAdguard, FaPhone } = icons
 

@@ -16,6 +16,16 @@ export const apiLogin = async (data) =>
         withCredentials: true
     });
 
+export const apiLoginGoogle = async (idToken) => {
+    return axiosInstance({
+        url: "/auth/signin/google", 
+        method: "post",
+        data: { idToken },
+        withCredentials: true
+    });
+};
+
+
 export const apiGetCurrentUser = async () =>
     axiosInstance({
         url: "/auth/account",
@@ -146,10 +156,10 @@ export const apiSetStatusUser = async (user) => {
     });
 };
 // Tạo order
-export const apiCreateOrder = async (formData)=>{
+export const apiCreateOrder = async (formData) => {
     return axiosInstance({
-        url:`/checkout`,
-        method:'post',
+        url: `/checkout`,
+        method: 'post',
         data: formData,
         headers: {
             'Content-Type': 'multipart/form-data'
@@ -157,13 +167,13 @@ export const apiCreateOrder = async (formData)=>{
     })
 }
 // Lấy các sản phẩm được chọn trong cart
-export const apiGetSelectedCart = async (pids)=>{
+export const apiGetSelectedCart = async (pids) => {
     return axiosInstance({
-        url:`cart/product-selected?productIds=${pids?.join(',')}`,
+        url: `cart/product-selected?productIds=${pids?.join(',')}`,
         method: 'get',
     });
 };
-export const apiSendEmail = async (formData)=>{
+export const apiSendEmail = async (formData) => {
     return axiosInstance({
         url: `checkout/email`,
         method: 'post',
@@ -175,7 +185,7 @@ export const apiSendEmail = async (formData)=>{
 }
 export const apiPaymentVNPay = async (params) =>
     axiosInstance({
-        url:`payment/vn-pay`,
+        url: `payment/vn-pay`,
         method: 'get',
         params,
     })

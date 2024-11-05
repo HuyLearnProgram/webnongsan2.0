@@ -78,3 +78,9 @@ security:
     - path: /api/v2/products/quantity/*
       methods:
         - PUT
+    - path: /api/v2/products/similar/*
+      methods:
+        - GET
+    - path: /api/v2/auth/signin/google
+      methods:
+        - POST

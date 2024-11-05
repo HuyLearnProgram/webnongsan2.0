@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react'
 import path from '@/utils/path'
 import { Route, Routes} from "react-router-dom";
-import { Login, Home, Public, ProductDetail, ForYou, Product, ResetPassword, CartDetail, Checkout, ErrorPage, PaymentSuccess, PaymentFailure, LocationSelector } from "@/pages/guest";
+import { Login, Home, Public, ProductDetail, Product, ResetPassword, CartDetail, Checkout, ErrorPage, PaymentSuccess, PaymentFailure, LocationSelector } from "@/pages/guest";
 import { MemberLayout, Personal, Wishlist, History } from '@/pages/member';
 import { useDispatch, useSelector } from "react-redux";
 import { getCategories } from "@/store/app/asyncActions";
@@ -11,6 +11,7 @@ import { Bounce, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {Modal } from '@/components';
 import { Admin, Feedback } from "./pages/admin/index";
+
 const App = () => {
   const dispatch = useDispatch();
   const { isShowModal, modalChildren } = useSelector(state => state.app)
@@ -28,7 +29,6 @@ const App = () => {
           <Route path={path.HOME} element={<Home />}></Route>
           <Route path={path.PRODUCTS} element={<Product />}></Route>
           <Route path={path.PRODUCTS_BASE} element={<Product />}></Route>
-          <Route path={path.FOR_YOU} element={<ForYou />}></Route>
           <Route path={path.PRODUCT_DETAIL} element={<ProductDetail />}></Route>
           <Route path={path.CART} element={<CartDetail />}></Route>
           <Route path={path.CHECKOUT} element={<Checkout />}></Route>

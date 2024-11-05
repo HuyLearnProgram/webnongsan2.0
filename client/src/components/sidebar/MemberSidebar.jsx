@@ -1,5 +1,4 @@
-import React, { Fragment, useState, useEffect } from "react";
-import { memo } from "react";
+import React, { Fragment, useState, useEffect, memo } from "react";
 import avatar from '@/assets/avatarDefault.png'
 import { memberSidebar } from '@/utils/constants';
 import { NavLink } from "react-router-dom";
@@ -38,7 +37,13 @@ const MemberSidebar = () => {
     return (
         <div className="bg-white h-full py-4">
             <div className="w-full flex flex-col  items-center justify-center p-4">
-                <img src={user?.avatarUrl ? `http://localhost:8080/storage/avatar/${user?.avatarUrl}` : avatar} alt="Image" className="w-20 h-20 object-cover rounded-full" />
+                <img
+                    src={user?.avatarUrl && user.avatarUrl.startsWith('https://')
+                        ? user.avatarUrl
+                        : `${import.meta.env.VITE_BACKEND_TARGET}/storage/avatar/${user?.avatarUrl || avatar}`}
+                    alt="Image"
+                    className="w-20 h-20 object-cover rounded-full"
+                />
                 <span>{user?.name}</span>
             </div>
             <div>

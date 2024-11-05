@@ -28,7 +28,7 @@ public class PaginationHelper {
     }
 
     //build PaginationDTO từ Page
-    private <T> PaginationDTO buildPaginationDTO(Page<T> page) {
+    public <T> PaginationDTO buildPaginationDTO(Page<T> page) {
         PaginationDTO rs = new PaginationDTO();
         PaginationDTO.Meta meta = new PaginationDTO.Meta();
 

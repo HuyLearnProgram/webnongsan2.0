@@ -11,7 +11,7 @@ const ForgotPassword = ({ onClose }) => {
     const response = await apiForgotPassword({ email: data.email });
     //console.log(response)
     if (response.statusCode !== 200) {
-      toast.info("Có lỗi xảy ra, vui lòng thử lại sau");
+      toast.info(response?.message);
     } else {
       toast.success("Vui lòng kiểm tra email");
       onClose();
