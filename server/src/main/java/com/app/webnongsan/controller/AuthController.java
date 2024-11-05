@@ -3,15 +3,12 @@ package com.app.webnongsan.controller;
 import com.app.webnongsan.domain.Role;
 import com.app.webnongsan.domain.User;
 import com.app.webnongsan.domain.request.EmailRequestDTO;
+import com.app.webnongsan.domain.request.GoogleTokenRequest;
 import com.app.webnongsan.domain.request.LoginDTO;
 import com.app.webnongsan.domain.request.ResetPasswordDTO;
 import com.app.webnongsan.domain.response.user.CreateUserDTO;
 import com.app.webnongsan.domain.response.user.ResLoginDTO;
-import com.app.webnongsan.service.AuthService;
-import com.app.webnongsan.service.CartService;
-import com.app.webnongsan.service.EmailService;
-import com.app.webnongsan.service.FileService;
-import com.app.webnongsan.service.UserService;
+import com.app.webnongsan.service.*;
 import com.app.webnongsan.util.SecurityUtil;
 import com.app.webnongsan.util.annotation.ApiMessage;
 import com.app.webnongsan.util.exception.AuthException;
@@ -25,12 +22,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -46,9 +50,9 @@ public class AuthController {
     private final CartService cartService;
     @Value("${jwt.refreshtoken-validity-in-seconds}")
     private long refreshTokenExpiration;
+    private final CustomOAuth2UserService oAuth2UserService;
 
-
-    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, UserService userService, EmailService emailService, AuthService authService, CartService cartService, FileService fileService) {
+    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, UserService userService, EmailService emailService, AuthService authService, CartService cartService, FileService fileService, CustomOAuth2UserService oAuth2UserService) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
         this.userService = userService;
@@ -56,6 +60,7 @@ public class AuthController {
         this.authService = authService;
         this.fileService = fileService;
         this.cartService = cartService;
+        this.oAuth2UserService = oAuth2UserService;
     }
 
     @PostMapping("auth/login")
@@ -285,5 +290,67 @@ public class AuthController {
         userLogin.setRole(currentUserDB.getRole());
 
         return ResponseEntity.ok(userGetAccount);
+    }
+
+    @PostMapping("auth/signin/google")
+    @ApiMessage("Login with Google")
+    public ResponseEntity<ResLoginDTO> loginWithGoogle(@RequestBody GoogleTokenRequest request) throws AuthException, GeneralSecurityException, IOException {
+        // Xử lý token từ Google
+        OAuth2User oauth2User = oAuth2UserService.processOAuth2User(request.getIdToken());
+        String email = oauth2User.getAttribute("email");
+        User currentUserDB = userService.getUserByUsername(email);
+        // Kiểm tra trạng thái tài khoản
+        if (currentUserDB != null && currentUserDB.getStatus() == 0) {
+            throw new AuthException("Tài khoản của bạn đã bị khóa. Không thể đăng nhập");
+        }
+        //khi đăng nhập bằng mật khẩu, Spring Security tự động xử lý authorities từ UserDetailsService
+        // trong khi đăng nhập Google không có sẵn
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + currentUserDB.getRole().getRoleName()));
+
+        // Tạo UserDetails sử dụng User của Spring Security
+        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                email,
+                "", // password trống vì xác thực qua Google
+                true, // enabled
+                true, // accountNonExpired
+                true, // credentialsNonExpired
+                true, // accountNonLocked
+                authorities
+        );
+
+        // Tạo authentication với UserDetails
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        ResLoginDTO res = new ResLoginDTO();
+        ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
+                currentUserDB.getId(),
+                currentUserDB.getEmail(),
+                currentUserDB.getName(),
+                currentUserDB.getRole());
+        res.setUser(userLogin);
+        String accessToken = securityUtil.createAccessToken(email, res);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        res.setAccessToken(accessToken);
+        // Tạo refresh token nếu cần thiết
+        String refresh_token = securityUtil.createRefreshToken(email, res);
+        userService.updateUserToken(refresh_token, email);
+
+        // Tạo cookie cho refresh token
+        ResponseCookie responseCookie = ResponseCookie.from("refresh_token", refresh_token)
+                .httpOnly(true)
+                .secure(false) // Đặt true nếu sử dụng HTTPS
+                .path("/")
+                .maxAge(refreshTokenExpiration)
+                .sameSite("Lax")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+                .body(res);
     }
 }

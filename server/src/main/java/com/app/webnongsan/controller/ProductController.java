@@ -2,6 +2,8 @@ package com.app.webnongsan.controller;
 
 import com.app.webnongsan.domain.Product;
 import com.app.webnongsan.domain.response.PaginationDTO;
+import com.app.webnongsan.domain.response.product.ResProductDTO;
+import com.app.webnongsan.domain.response.product.SearchProductDTO;
 import com.app.webnongsan.service.ProductService;
 import com.app.webnongsan.util.annotation.ApiMessage;
 import com.app.webnongsan.util.exception.ResourceInvalidException;
@@ -14,6 +16,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v2")
@@ -92,5 +96,10 @@ public class ProductController {
         p.setQuantity(p.getQuantity() - quantity);
         p.setSold(p.getSold()+quantity);
         return ResponseEntity.ok(this.productService.update(p));
+    }
+
+    @GetMapping("products/similar/{productId}")
+    public ResponseEntity<List<SearchProductDTO>> getSimilarProducts(@PathVariable Long productId) {
+        return ResponseEntity.ok(productService.getSimilarProducts(productId));
     }
 }

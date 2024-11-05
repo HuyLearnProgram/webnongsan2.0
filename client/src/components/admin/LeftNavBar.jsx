@@ -15,7 +15,7 @@ const LeftNavBar = () => {
                                     key={e.id}
                                     className={({ isActive }) =>
                                         `block ${isActive
-                                            ? "text-main-hover font-bold"
+                                            ? "text-main-hover font-semibold"
                                             : "hover:text-main-hover"
                                         }`
                                     }

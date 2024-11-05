@@ -2,10 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { apiSearchProducts } from "@/apis";
 import { useNavigate } from "react-router-dom";
 import product_default from '@/assets/product_default.png';
-import { Link } from "react-router-dom";
 import { ProductMiniItem } from "@/components";
 import { convertToSlug } from "@/utils/helper";
-
 
 const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,12 +16,9 @@ const SearchBar = () => {
 
   useEffect(() => {
     if (searchTerm.trim() !== "") {
-      // Clear any existing timeout
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
-
-      // Set new timeout for search
       searchTimeoutRef.current = setTimeout(() => {
         handleSearch();
       }, 1500);
@@ -31,7 +26,6 @@ const SearchBar = () => {
       setProducts(null);
       setShowResults(false);
     }
-
     return () => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
@@ -58,6 +52,7 @@ const SearchBar = () => {
 
   const handleShowAll = () => {
     navigate(`/products?search=${searchTerm}`);
+    setShowResults(false);
   };
 
   const handleClickOutside = (event) => {
@@ -75,12 +70,17 @@ const SearchBar = () => {
 
   const handleKeyDown = (event) => {
     if (event.key === "Enter" && searchTerm.trim() !== "") {
-      // Clear the timeout when Enter is pressed
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
       navigate(`/products?search=${searchTerm}`);
+      setShowResults(false);
     }
+  };
+
+  const handleProductClick = (product) => {
+    navigate(`/products/${encodeURIComponent(product.category)}/${product.id}/${convertToSlug(product.product_name)}`);
+    setShowResults(false);
   };
 
   return (
@@ -101,10 +101,12 @@ const SearchBar = () => {
           ) : products && products.length > 0 ? (
             <>
               {products.map((product) => (
-                <div key={product.id} className="p-2 border-b">
-                  <Link to={`/products/${encodeURIComponent(product.category)}/${product.id}/${convertToSlug(product.product_name)}`}>
-                    <ProductMiniItem title={product.product_name} image={product.imageUrl || product_default} price={product.price} />
-                  </Link>
+                <div
+                  key={product.id}
+                  className="p-2 border-b cursor-pointer"
+                  onClick={() => handleProductClick(product)}
+                >
+                  <ProductMiniItem title={product.product_name} image={product.imageUrl || product_default} price={product.price} />
                 </div>
               ))}
               <button
@@ -115,7 +117,7 @@ const SearchBar = () => {
               </button>
             </>
           ) : (
-            <div className="p-2 text-sm">Không tìm thấy sản phẩm.</div>
+            <div className="p-2 text-sm">Không tìm thấy sản phẩm. Tìm kiếm với hệ thống đề xuất?</div>
           )}
         </div>
       )}

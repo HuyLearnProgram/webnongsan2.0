@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
     @Query("SELECT new com.app.webnongsan.domain.response.order.OrderDetailDTO" +
@@ -22,11 +24,11 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
             @Param("userId") Long userId,
             @Param("status") Integer status,
             Pageable pageable);
-}
 
-//SELECT *
-//FROM webnongsan.order_detail od
-//JOIN webnongsan.orders o ON od.order_id = o.id
-//JOIN webnongsan.products p ON od.product_id = p.id
-//WHERE o.user_id = 2;
+    @Query(value = "CALL GetRevenueByWeekCycle(:month, :year)", nativeQuery = true)
+    List<Object[]> getMonthlyRevenue(int month, int year);
+
+    @Query("SELECT SUM(o.total_price) FROM Order o WHERE o.status = :status")
+    double sumTotalPriceByStatus(@Param("status") int status);
+}
 

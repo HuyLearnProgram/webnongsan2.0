@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -143,6 +144,15 @@ public class UserService {
 
         this.userRepository.save(user);
     }
+
+//    public User registerNewUser(OAuth2User oauth2User) {
+//        User user = new User();
+//        user.setEmail(oauth2User.getAttribute("email"));
+//        user.setName(oauth2User.getAttribute("name"));
+//        user.setAvatarUrl(oauth2User.getAttribute("picture"));
+//        user.setProvider("GOOGLE");
+//        return this.userRepository.save(user);
+//    }
 
 }
 

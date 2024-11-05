@@ -5,6 +5,7 @@ import com.app.webnongsan.domain.Order;
 import com.app.webnongsan.domain.response.PaginationDTO;
 import com.app.webnongsan.domain.response.feedback.FeedbackDTO;
 import com.app.webnongsan.domain.response.order.OrderDTO;
+import com.app.webnongsan.domain.response.order.WeeklyRevenue;
 import com.app.webnongsan.service.OrderDetailService;
 import com.app.webnongsan.service.OrderService;
 import com.app.webnongsan.service.ProductService;
@@ -31,8 +32,6 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public class OrderController {
     private final OrderService orderService;
-    private final OrderDetailService orderDetailService;
-    private final ProductService productService;
 
     @GetMapping("allOrders")
     @ApiMessage("Get all Orders")
@@ -44,12 +43,6 @@ public class OrderController {
     @ApiMessage("Get order information")
     public ResponseEntity<Optional<OrderDTO>> getOrderInfor(@PathVariable("orderId") long orderId){
         return ResponseEntity.ok(this.orderService.findOrder(orderId));
-    }
-
-    @GetMapping("overviewOrder")
-    @ApiMessage("Get order for overview page")
-    public ResponseEntity<List<OrderDTO>> getLastFiveOrders(){
-        return ResponseEntity.ok(this.orderService.getLastFiveOrders());
     }
 
     @GetMapping("updateOrderStatus/{orderId}")
@@ -116,5 +109,17 @@ public class OrderController {
             @RequestParam(value = "status", required = false) Integer status
     ) throws ResourceInvalidException {
         return ResponseEntity.ok(this.orderService.getOrderByCurrentUser(pageable, status));
+    }
+
+    @GetMapping("/monthly-orders-revenue")
+    @ApiMessage("Get data for monthy revenue chart")
+    public ResponseEntity<List<WeeklyRevenue>> getMonthlyRevenue(@RequestParam int month, @RequestParam int year) {
+        return ResponseEntity.ok(this.orderService.getMonthlyRevenue(month, year));
+    }
+
+    @GetMapping("/admin/summary")
+    @ApiMessage("Get ...")
+    public ResponseEntity<List<Object>> getOverview(){
+        return ResponseEntity.of(Optional.ofNullable(this.orderService.getOverviewStats()));
     }
 }

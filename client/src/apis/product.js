@@ -1,5 +1,4 @@
 import axiosInstance from "@/utils/axios";
-import axiosInstanceRecommended from "@/utils/recommendedAxios";
 export const apiGetProducts = async (params) =>
     axiosInstance({
         url: "/products",
@@ -122,3 +121,8 @@ export const apiCancelOrder = async (id,params)=>
         params,
     })
 
+export const apiFetchRecommendProductById = async(id) => 
+    axiosInstance({
+        url: `products/similar/${id}`,
+        method: "get",
+    })
